@@ -1,0 +1,4 @@
+
+git+https://github.com/tweepy/tweepy.git
+bs4
+requests
