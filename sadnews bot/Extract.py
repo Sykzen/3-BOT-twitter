@@ -8,8 +8,9 @@ def tombstone(bs4elementTag):
     for a,b,c in zip(string,string[1:],string[2:]):
         enumerate+=1
         if a=="a" and b=="n" and c==">":
-            return ((string[enumerate+2:-13].replace('\n','')).replace('\t','')).replace('Mort','Mort ')
-           
+            ch= ((string[enumerate+2:-13].replace('\n','')).replace('\t','')).replace('Mort','Mort ')
+            return "inconnue" if '<em' in ch else ch
+
 class Extract:
     def __init__(self,bsfourElementTag):
         self.a=bsfourElementTag.a
@@ -33,13 +34,13 @@ class Extract:
                 liste.append(i.text if i.text!='' else None)
             except:
                 None
-        return [i for i in liste if i!=""]
+        return [i for i in liste if i!=None]
     def XtractText(self):
         """self------> txt
         get a brief decription of the defunt"""
-        txt=self.p.replace('\n','')
-        txt=txt.replace('\t','')
-        return txt
+        txt=self.t.replace('\n','')
+        return txt.replace('\t','')
+
     def XtractDeathCause(self):
         """ self ---> string
         get the main cause of the death """
@@ -47,4 +48,3 @@ class Extract:
         page=requests.get(URL)
         soup=BeautifulSoup(page.content,'html.parser')
         return tombstone(soup.find('div',class_="overflowed_intern"))
-    

@@ -33,6 +33,10 @@ for tweet in timeline:
     print(f"{tweet.user.name} said {tweet.text}") #print(tweet.user.name,"said", tweet.text)
 #------tweet a msg----------------------
 api.update_status("Test tweet from Tweepy Python")
+
+#tweet with media (image):
+api.update_with_media(filename = filename, status = status) # filename=the link to the img , status= the message
+
 #---------follow quelqu'un-----------------
 api.create_friendship("realpython")
 #--------------changer sa description -----------------------
