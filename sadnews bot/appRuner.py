@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from Extract import Extract
 import requests
 import re
+import os
 from bing_image_downloader import downloader
 import sys
 import shutil
@@ -18,25 +19,39 @@ except:
 
 
 
-URL="https://www.jesuismort.com/cimetiere/mort-recente"
-page=requests.get(URL)
-LastDeath="Michel Le Bris"
-soup=BeautifulSoup(page.content,'html.parser')
-numberOfBloc=soup.select("div",{'id':'page_centerColumn'})
-death = soup.find(class_='page block celebrity blockList')
+
+LastDeath="Jean-Claude Carrière"
+
+
 def CheckNews():
+    global LastDeath
+    global soup
+    print(LastDeath)
+    e=0
+    URL="https://www.jesuismort.com/cimetiere/mort-recente"
+    page=requests.get(URL)
     soup=BeautifulSoup(page.content,'html.parser')
 
     alldeathe = soup.find_all(class_='page block celebrity blockList')
+   
 
-    for e,i in enumerate(alldeathe):
-        
-        if i.a.find('img',title=True)['title']==LastDeath:
-            return e
+    for i in alldeathe:
+        for s in i:
+            
+            k=s.find('img')
+            if k!=-1:
+                e=e+1
+                print(LastDeath)
+                if k.get('title')==LastDeath:
+                            
+                    print(e-1)
+                    return e-1
+    
     
 
 def MakeMsg():
     global LastDeath
+    global soup
     chdif=CheckNews()
     deathOfLapsus=soup.find_all(class_='page block celebrity blockList')[:chdif]
     listeOfDeathOfLapsus=[]
@@ -61,7 +76,7 @@ def Hashtag(ProperName):
 
 def fetchIMG(name):
     downloader.download(name, limit=1)
-    return 'dataset/',name,'/Image_1.jpg'
+    return 'dataset/',name,'/',os.listdir("dataset/"+str(name))[0]
 def Cizel(name, infoA,infoB,diff,text,tombstone):
     Hashtg,lenstatic0=Hashtag(name)
     lenstatic1="%s : %s - %s  (%s ans)\n" % (name, infoA,infoB,diff)
@@ -70,7 +85,6 @@ def Cizel(name, infoA,infoB,diff,text,tombstone):
     mintexte=280-Lenmin-3
     texte=text[0:mintexte]
     LASTEtexte="""%s : %s - %s  (%s ans)\n%s\n Cause décès: %s\n%s""" % (name, infoA,infoB,diff,texte,tombstone,Hashtg)
-    print(len(LASTEtexte))
     return LASTEtexte
 
 def tweetPublish(*args):
@@ -82,8 +96,8 @@ def tweetPublish(*args):
     message="""%s : %s - %s  (%s ans)\n%s\nCause décès: %s\n%s""" % (name, info[0],info[1],diff,text,tombstone,Hashtg)
     message=[message,Cizel(name, info[0],info[1],diff,text,tombstone)][len(message)>280]
     api.update_with_media(filename = imglink, status =message,auto_populate_reply_metadata=True)
-    print('tweet published with',message)
-    print(LastDeath)
+    print('tweet published')
+
     
 def pushMsg():
     listeOfDeathOfLapsus=MakeMsg()
@@ -92,13 +106,13 @@ def pushMsg():
         
         tweetPublish(i['name'],i['info'],i['text'],i['tombstone'],imglink)
         shutil.rmtree("dataset")
-        time.sleep(60)
+        time.sleep(5)
 def Checkalize():
     if CheckNews()>0:
         pushMsg()    
-        
+    else:
+        time.sleep(60*60)
 while 1:
-    Checkalize()
-    for i in range(60):
-        print('dans la',i,'minute')
-        time.sleep(60)
+   Checkalize()
+   print('--')
+    
